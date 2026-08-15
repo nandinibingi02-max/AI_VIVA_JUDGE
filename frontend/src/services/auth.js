@@ -20,6 +20,14 @@ async function request(path, options = {}) {
 
 export const auth = {
   getAccessToken: () => accessToken,
+  async ensureAccessToken() {
+    if (accessToken) return accessToken;
+    try {
+      const result = await request('/auth/refresh', { method: 'POST' });
+      accessToken = result.accessToken;
+      return accessToken;
+    } catch { return null; }
+  },
   async login(credentials) {
     const result = await request('/auth/login', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(credentials) });
     accessToken = result.accessToken;

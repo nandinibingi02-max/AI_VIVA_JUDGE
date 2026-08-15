@@ -1,16 +1,19 @@
 import Fastify from 'fastify';
 import fastifyCookie from '@fastify/cookie';
+import fastifyMultipart from '@fastify/multipart';
 import { registerCorsPlugin } from './plugins/cors.js';
 import { registerHelmetPlugin } from './plugins/helmet.js';
 import { registerRateLimitPlugin } from './plugins/rateLimit.js';
 import { registerAuthPlugin } from './plugins/auth.js';
 import { authRoutes } from './modules/auth/auth.routes.js';
+import { vivaRoutes } from './modules/viva/viva.routes.js';
 import { AppError } from './utils/errors.js';
 import { env } from './config/env.js';
 
 export async function buildApp() {
   const app = Fastify({ logger: true });
   await app.register(fastifyCookie);
+  await app.register(fastifyMultipart, { limits: { files: 1, fileSize: 10 * 1024 * 1024 } });
   await registerHelmetPlugin(app);
   await registerCorsPlugin(app);
   await registerRateLimitPlugin(app);
@@ -26,5 +29,6 @@ export async function buildApp() {
     return reply.code(500).send({ error: { code: 'INTERNAL_ERROR', message: 'An unexpected error occurred.' } });
   });
   await app.register(authRoutes, { prefix: '/api/auth' });
+  await app.register(vivaRoutes, { prefix: '/api/viva' });
   return app;
 }

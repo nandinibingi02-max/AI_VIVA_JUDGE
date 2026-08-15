@@ -40,4 +40,5 @@ export const env = Object.freeze({
   corsOrigin: required('CORS_ORIGIN'),
   authRateLimitMax: integer('AUTH_RATE_LIMIT_MAX'),
   authRateLimitWindow: required('AUTH_RATE_LIMIT_WINDOW'),
+  groqApiKey: process.env.GROQ_API_KEY ?? null,
 });
