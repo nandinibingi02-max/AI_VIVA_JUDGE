@@ -1,5 +1,6 @@
 const API_BASE_URL = import.meta.env.VITE_API_URL;
 let accessToken = null;
+let refreshInFlight = null;
 
 class AuthRequestError extends Error {
   constructor(message, details) { super(message); this.details = details; }
@@ -18,12 +19,20 @@ async function request(path, options = {}) {
   return body;
 }
 
+async function refreshSession() {
+  if (!refreshInFlight) {
+    refreshInFlight = request('/auth/refresh', { method: 'POST' })
+      .finally(() => { refreshInFlight = null; });
+  }
+  return refreshInFlight;
+}
+
 export const auth = {
   getAccessToken: () => accessToken,
   async ensureAccessToken() {
     if (accessToken) return accessToken;
     try {
-      const result = await request('/auth/refresh', { method: 'POST' });
+      const result = await refreshSession();
       accessToken = result.accessToken;
       return accessToken;
     } catch { return null; }
@@ -40,7 +49,7 @@ export const auth = {
   },
   async restoreSession() {
     try {
-      const result = await request('/auth/refresh', { method: 'POST' });
+      const result = await refreshSession();
       accessToken = result.accessToken;
       return result.user;
     } catch { accessToken = null; return null; }

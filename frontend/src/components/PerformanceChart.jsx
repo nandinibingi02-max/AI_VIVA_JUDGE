@@ -79,7 +79,7 @@ const PerformanceChart = ({ data }) => {
         </div>
         <div className="legend-item">
           <div className="legend-color" style={{ background: '#06b6d4' }}></div>
-          <span>Understanding</span>
+          <span>Confidence</span>
         </div>
       </div>
     </div>

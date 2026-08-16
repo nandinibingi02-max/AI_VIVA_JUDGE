@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 import { Clock, CheckCircle, AlertCircle, ChevronRight } from 'lucide-react';
 import '../styles/RecentSessions.css';
 
-const RecentSessions = ({ sessions }) => {
+const RecentSessions = ({ sessions, onOpen }) => {
   if (!sessions || sessions.length === 0) {
     return (
       <div className="empty-state">
@@ -24,7 +24,7 @@ const RecentSessions = ({ sessions }) => {
         >
           <div className="session-info">
             <div className="session-icon-wrapper">
-              {session.status === 'passed' ? 
+              {session.status === 'completed' ? 
                 <CheckCircle size={18} color="#10b981" /> : 
                 <AlertCircle size={18} color="#ef4444" />
               }
@@ -38,8 +38,8 @@ const RecentSessions = ({ sessions }) => {
             </div>
           </div>
           <div className="session-score">
-            <span className="score-value">{session.score}%</span>
-            <button className="session-view">
+            <span className="score-value">{Number.isFinite(session.score) ? `${session.score}%` : 'Active'}</span>
+            <button className="session-view" onClick={() => onOpen?.(session.id)} aria-label={`Open ${session.subject} viva`}>
               <ChevronRight size={16} />
             </button>
           </div>

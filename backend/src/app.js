@@ -19,8 +19,8 @@ export async function buildApp() {
   await registerRateLimitPlugin(app);
   await registerAuthPlugin(app);
   app.setErrorHandler((error, request, reply) => {
-    if (request.headers.origin === env.corsOrigin) {
-      reply.header('access-control-allow-origin', env.corsOrigin);
+    if (env.corsOrigins.includes(request.headers.origin)) {
+      reply.header('access-control-allow-origin', request.headers.origin);
       reply.header('access-control-allow-credentials', 'true');
     }
     if (error instanceof AppError) return reply.code(error.statusCode).send({ error: { code: error.code, message: error.message, ...(error.details ? { details: error.details } : {}) } });

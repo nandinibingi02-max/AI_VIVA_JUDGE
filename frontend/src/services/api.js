@@ -1,10 +1,17 @@
 import { auth } from './auth';
 
-const API_BASE_URL = import.meta.env.VITE_API_URL;
+const API_BASE_URL = import.meta.env.VITE_API_URL?.replace(/\/+$/, '');
+
+const apiBaseUrl = () => {
+  if (!API_BASE_URL || !/^https?:\/\//.test(API_BASE_URL)) {
+    throw new Error('Viva API is not configured. Set VITE_API_URL to your backend URL followed by /api and redeploy the frontend.');
+  }
+  return API_BASE_URL;
+};
 
 export const api = {
   getDashboardData: async () => {
-    const response = await fetch(`${API_BASE_URL}/dashboard`);
+    const response = await fetch(`${apiBaseUrl()}/dashboard`);
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
@@ -12,6 +19,7 @@ export const api = {
   },
 
   startViva: async (projectData, projectFile) => {
+    const baseUrl = apiBaseUrl();
     const token = await auth.ensureAccessToken();
     const headers = token ? { Authorization: `Bearer ${token}` } : {};
     const body = projectFile
@@ -25,7 +33,7 @@ export const api = {
         })()
       : JSON.stringify(projectData);
     if (!projectFile) headers['Content-Type'] = 'application/json';
-    const response = await fetch(`${API_BASE_URL}/viva/start`, {
+    const response = await fetch(`${baseUrl}/viva/start`, {
       method: 'POST',
       credentials: 'include',
       headers,
@@ -39,8 +47,9 @@ export const api = {
   },
 
   submitAnswer: async (sessionId, answer) => {
+    const baseUrl = apiBaseUrl();
     const token = await auth.ensureAccessToken();
-    const response = await fetch(`${API_BASE_URL}/viva/${encodeURIComponent(sessionId)}/answer`, {
+    const response = await fetch(`${baseUrl}/viva/${encodeURIComponent(sessionId)}/answer`, {
       method: 'POST',
       credentials: 'include',
       headers: { 'Content-Type': 'application/json', ...(token ? { Authorization: `Bearer ${token}` } : {}) },
@@ -51,15 +60,17 @@ export const api = {
   },
 
   getResults: async (sessionId) => {
+    const baseUrl = apiBaseUrl();
     const token = await auth.ensureAccessToken();
-    const response = await fetch(`${API_BASE_URL}/viva/${encodeURIComponent(sessionId)}/results`, { credentials: 'include', headers: token ? { Authorization: `Bearer ${token}` } : {} });
+    const response = await fetch(`${baseUrl}/viva/${encodeURIComponent(sessionId)}/results`, { credentials: 'include', headers: token ? { Authorization: `Bearer ${token}` } : {} });
     if (!response.ok) throw new Error('Failed to get results');
     return await response.json();
   },
 
   getHistory: async () => {
+    const baseUrl = apiBaseUrl();
     const token = await auth.ensureAccessToken();
-    const response = await fetch(`${API_BASE_URL}/viva/history`, { credentials: 'include', headers: token ? { Authorization: `Bearer ${token}` } : {} });
+    const response = await fetch(`${baseUrl}/viva/history`, { credentials: 'include', headers: token ? { Authorization: `Bearer ${token}` } : {} });
     if (!response.ok) throw new Error('Failed to get session history');
     return await response.json();
   }

@@ -23,9 +23,15 @@ const durationSeconds = (name) => {
 const sameSite = required('COOKIE_SAME_SITE');
 if (!['strict', 'lax', 'none'].includes(sameSite)) throw new Error('Invalid environment variable: COOKIE_SAME_SITE');
 
+const corsOrigins = required('CORS_ORIGIN').split(',').map((origin) => origin.trim()).filter(Boolean);
+if (corsOrigins.length === 0 || corsOrigins.some((origin) => {
+  try { new URL(origin); return false; }
+  catch { return true; }
+})) throw new Error('Invalid environment variable: CORS_ORIGIN');
+
 export const env = Object.freeze({
   nodeEnv: required('NODE_ENV'),
-  host: required('HOST'),
+  host: process.env.HOST || '0.0.0.0',
   port: integer('PORT'),
   databaseUrl: required('DATABASE_URL'),
   dbPoolMax: integer('DB_POOL_MAX'),
@@ -37,7 +43,7 @@ export const env = Object.freeze({
   refreshCookieName: required('REFRESH_COOKIE_NAME'),
   cookieSecure: boolean('COOKIE_SECURE'),
   cookieSameSite: sameSite,
-  corsOrigin: required('CORS_ORIGIN'),
+  corsOrigins,
   authRateLimitMax: integer('AUTH_RATE_LIMIT_MAX'),
   authRateLimitWindow: required('AUTH_RATE_LIMIT_WINDOW'),
   groqApiKey: process.env.GROQ_API_KEY ?? null,
